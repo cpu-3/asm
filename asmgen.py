@@ -47,7 +47,7 @@ def check_and_trans_reg(name):
 
     if name in reg_d:
         return reg_d[name]
-    
+
     print('{} のようなレジスタは存在しません'.format(name))
     raise Exception('No Such Register')
 
@@ -57,7 +57,7 @@ def check_and_trans_imm(imm, size):
     except Exception as e:
         print('{} を整数に変換できませんでした'.format(imm))
         raise e
-    
+
     l = bin(val) - 2
     if l > size:
         print('{} は即値として大きすぎます。{} bit以下でなければなりません'.format(imm, size))
@@ -72,11 +72,12 @@ def pack(tuples):
         val <<= length
         val += code
         cnt += length
-    
+
     if cnt != INST_LEN:
         print('アセンブラがバグっていて、命令の長さが32bitになっていません')
         raise Exception('Bit Length Error')
-    return struct.pack('>L', val)
+    print(bin(val))
+    return struct.pack('<L', val)
 
 def lui(rd, imm):
     rd = check_and_trans_reg(rd)
