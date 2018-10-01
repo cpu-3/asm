@@ -20,18 +20,18 @@ import unittest
 import asmgen
 
 
-read_byte = 0
+read_bytes = 0
 tags = {} # map[tag]int
 
 debug = True
 
-tag_re = r'((?P<tag_name>[a-zA-Z_][\w|.]*):)'
+tag_re = r'((?P<tag_name>[_|\w|.]*):)'
 r = r'^\s*' + tag_re + r'.*$'
 tag_pat = re.compile(r)
 def parse_tag_line(s):
     m = tag_pat.match(s)
     if m is not None:
-        tags[m.group('tag_name')] = read_byte
+        tags[m.group('tag_name')] = read_bytes
 
 
 def check_args(name, args, length):
@@ -110,6 +110,33 @@ def asm(name, args):
     elif name == 'bgeu':
         check_args(name, args, 3)
         return asmgen.bgeu(args[0], args[1], args[2])
+    elif name == 'addi':
+        check_args(name, args, 3)
+        return asmgen.addi(args[0], args[1], args[2])
+    elif name == 'slti':
+        check_args(name, args, 3)
+        return asmgen.slti(args[0], args[1], args[2])
+    elif name == 'sltiu':
+        check_args(name, args, 3)
+        return asmgen.sltiu(args[0], args[1], args[2])
+    elif name == 'sltiu':
+        check_args(name, args, 3)
+        return asmgen.sltiu(args[0], args[1], args[2])
+    elif name == 'xori':
+        check_args(name, args, 3)
+        return asmgen.xori(args[0], args[1], args[2])
+    elif name == 'ori':
+        check_args(name, args, 3)
+        return asmgen.ori(args[0], args[1], args[2])
+    elif name == 'andi':
+        check_args(name, args, 3)
+        return asmgen.andi(args[0], args[1], args[2])
+    elif name == 'slli':
+        check_args(name, args, 3)
+        return asmgen.slli(args[0], args[1], args[2])
+    elif name == 'srai':
+        check_args(name, args, 3)
+        return asmgen.srai(args[0], args[1], args[2])
     else:
         print('そのような命令は存在しません: {}'.format(name))
         raise Exception('No Such Operation')
@@ -159,12 +186,14 @@ class TestRegexes(unittest.TestCase):
         self.assertIsNotNone(op_pat.match('addi a1, a1,  %lo(msg)       # load msg(lo)'))
         self.assertIsNotNone(op_pat.match('jalr ra, puts'))
         self.assertIsNone(op_pat.match('_start:'))
+        self.assertIsNotNone(op_pat.match('1:	    auipc a1,     %pcrel_hi(msg) # load msg(hi)'))
         self.assertIsNone(op_pat.match('.globl _start'))
 
         m = op_pat.match('hoge: jalr ra, puts')
         self.assertEqual(m.group('tag_name'), 'hoge')
         self.assertEqual(m.group('op_name'), 'jalr')
         self.assertEqual(m.group('args'), 'ra, puts')
+
 
 def parse_line(s):
     m = op_pat.match(s)
@@ -184,6 +213,8 @@ def emit(output_file, assembly):
 
 
 def main():
+    global read_bytes
+
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='source file')
     parser.add_argument('--output', help='output file')
@@ -198,14 +229,21 @@ def main():
     of = open(output, 'wb')
 
     for line in open(filename).readlines():
-        parse_tag_line(line.strip())
+        l = line.strip()
+        parse_tag_line(l)
+        if parse_line(l) is not None:
+            read_bytes += 4
+    
+    print(tags)
 
     for line in open(filename).readlines():
-        a = parse_line(line)
+        a = parse_line(line.strip())
         emit(of, a)
+
 
 def test():
     unittest.main(verbosity=2)
+
 
 if __name__ == '__main__':
     main()

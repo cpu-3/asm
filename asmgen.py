@@ -58,11 +58,15 @@ def check_and_trans_imm(imm, size):
     except Exception as e:
         print('{} を整数に変換できませんでした'.format(imm))
         raise e
+    val = ctypes.c_ulong(val).value & 0xfffff
 
-    l = len(bin(val))- 2
+    l = len(bin(val)) - 2
+    '''
+    # このチェックは、妥当に行うのが難しそうなので一度外している
     if l > size:
         print('{} は即値として大きすぎます。{} bit以下でなければなりません'.format(imm, size))
         raise Exception('Too big')
+    '''
 
     return val
 
@@ -89,7 +93,6 @@ def pack(tuples):
 def lui(rd, imm):
     rd = check_and_trans_reg(rd)
     imm = check_and_trans_imm(imm, 20)
-    v = ctypes.c_ulong(imm).value & 0xfffff
     return pack([
         (0b0110111, 7),
         (rd, 5),
@@ -99,7 +102,7 @@ def lui(rd, imm):
 def auipc(rd, imm):
     rd = check_and_trans_reg(rd)
     imm = check_and_trans_imm(imm, 20)
-    v = ctypes.c_ulong(imm).value & 0xfffff
+    v = imm & 0xfffff
     return pack([
         (0b0010111, 7),
         (rd, 5),
@@ -118,7 +121,7 @@ def jal(rd, imm):
     rd = check_and_trans_reg(rd)
     imm = check_and_trans_imm(imm, 21)
     check_alignment(imm, 2)
-    v = ctypes.c_ulong(imm).value & 0xfffff
+    v = imm & 0xfffff
     return pack([
         (0b1101111, 7),
         (rd, 5),
@@ -129,7 +132,7 @@ def jalr(rd, rs, imm):
     rd = check_and_trans_reg(rd)
     rs = check_and_trans_reg(rs)
     imm = check_and_trans_imm(imm, 12)
-    v = ctypes.c_ulong(imm).value & 0xfffff
+    v = imm & 0xfffff
     return pack([
         (0b1101111, 7),
         (rd, 5),
@@ -170,6 +173,48 @@ def bltu(imm, rs1, rs2):
 
 def bgeu(imm, rs1, rs2):
     return branch(imm, 0b111, rs1, rs2)
+
+def alui(rd, funct3, rs1, imm):
+    imm = check_and_trans_imm(imm, 12)
+    rd = check_and_trans_reg(rd)
+    rs1 = check_and_trans_reg(rs1)
+    return pack([
+        (0b0010011, 7),
+        (rd, 5),
+        (funct3, 3),
+        (rs1, 5),
+        (imm, 11)
+    ])
+
+def shift(rd, funct3, rs1, imm1, imm2):
+    return alui(rd, funct3, rs1, imm1 | (imm2 << 5))
+
+def addi(rd, rs1, imm):
+    return alui(rd, 0b000, rs1, imm)
+
+def slti(rd, rs1, imm):
+    return alui(rd, 0b010, rs1, imm)
+
+def sltiu(rd, rs1, imm):
+    return alui(rd, 0b011, rs1, imm)
+
+def xori(rd, rs1, imm):
+    return alui(rd, 0b100, rs1, imm)
+
+def ori(rd, rs1, imm):
+    return alui(rd, 0b100, rs1, imm)
+
+def andi(rd, rs1, imm):
+    return alui(rd, 0b111, rs1, imm)
+
+def slli(rd, rs1, imm):
+    return shift(rd, 0b001, rs1, imm, 0)
+
+def srli(rd, rs1, imm):
+    return shift(rd, 0b101, rs1, imm, 0)
+
+def srai(rd, rs1, imm):
+    return shift(rd, 0b101, rs1, imm, 0b0100000)
 
 def pack_alu(opcode, rd, funct3, rs1, rs2, funct7):
     l = [
