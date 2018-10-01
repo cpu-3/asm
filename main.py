@@ -80,10 +80,43 @@ def asm(name, args):
     elif name == 'and':
         check_args(name, args, 3)
         return asmgen.and_(args[0], args[1], args[2])
+    elif name == 'lui':
+        check_args(name, args, 2)
+        return asmgen.lui(args[0], args[1])
+    elif name == 'auipc':
+        check_args(name, args, 2)
+        return asmgen.auipc(args[0], args[1])
+    elif name == 'jal':
+        check_args(name, args, 2)
+        return asmgen.jal(args[0], args[1])
+    elif name == 'jalr':
+        check_args(name, args, 3)
+        return asmgen.jalr(args[0], args[1], args[2])
+    elif name == 'beq':
+        check_args(name, args, 3)
+        return asmgen.beq(args[0], args[1], args[2])
+    elif name == 'bne':
+        check_args(name, args, 3)
+        return asmgen.bne(args[0], args[1], args[2])
+    elif name == 'blt':
+        check_args(name, args, 3)
+        return asmgen.blt(args[0], args[1], args[2])
+    elif name == 'bge':
+        check_args(name, args, 3)
+        return asmgen.bge(args[0], args[1], args[2])
+    elif name == 'bltu':
+        check_args(name, args, 3)
+        return asmgen.bltu(args[0], args[1], args[2])
+    elif name == 'bgeu':
+        check_args(name, args, 3)
+        return asmgen.bgeu(args[0], args[1], args[2])
+    else:
+        print('そのような命令は存在しません: {}'.format(name))
+        raise Exception('No Such Operation')
 
 
 op_name_re = r'(?P<op_name>[a-zA-Z_](\w|\.)*)'
-args_re = r'(?P<args>(((\w|\.|%|\(|\))+,)\s*)*(\w|\.|%|\(|\))+)?' # 若干雑だが
+args_re = r'(?P<args>(((-|\w|\.|%|\(|\))+,)\s*)*(-|\w|\.|%|\(|\))+)?' # 若干雑だが
 comment_q = r'(#.*)?'
 spaces = r'\s+'
 spaces_star = r'\s*'

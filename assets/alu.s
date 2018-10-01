@@ -1,3 +1,13 @@
-add t1, t2, t3
-sub t2, t1, t3
-and t1, t2, t3
+lui t2, 100
+add t1, zero, zero
+add t1, t1, t2
+add t1, t1, t2
+add t1, t1, t2
+add t1, t1, t2
+add t1, t1, t2
+sub t1, t1, t2
+sub t1, t1, t2
+sub t1, t1, t2
+sub t1, t1, t2
+sub t1, t1, t2
+sub t1, t1, t2
