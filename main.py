@@ -137,6 +137,30 @@ def asm(name, args):
     elif name == 'srai':
         check_args(name, args, 3)
         return asmgen.srai(args[0], args[1], args[2])
+    elif name == 'lb':
+        check_args(name, args, 3)
+        return asmgen.lb(args[0], args[1], args[2])
+    elif name == 'lh':
+        check_args(name, args, 3)
+        return asmgen.lh(args[0], args[1], args[2])
+    elif name == 'lw':
+        check_args(name, args, 3)
+        return asmgen.lw(args[0], args[1], args[2])
+    elif name == 'lbu':
+        check_args(name, args, 3)
+        return asmgen.lbu(args[0], args[1], args[2])
+    elif name == 'lhu':
+        check_args(name, args, 3)
+        return asmgen.lhu(args[0], args[1], args[2])
+    elif name == 'lhb':
+        check_args(name, args, 3)
+        return asmgen.sb(args[0], args[1], args[2])
+    elif name == 'sh':
+        check_args(name, args, 3)
+        return asmgen.sh(args[0], args[1], args[2])
+    elif name == 'sw':
+        check_args(name, args, 3)
+        return asmgen.sw(args[0], args[1], args[2])
     else:
         print('そのような命令は存在しません: {}'.format(name))
         raise Exception('No Such Operation')
