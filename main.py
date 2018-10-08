@@ -145,9 +145,13 @@ def handle_args(args, relative=True):
 
 
 def handle_hooked_instructions(name, arguments):
+    args = handle_args(arguments, True)
     if name == '_jal':
-        check_args(name, args, 2)
+        check_args(name, args, 1)
         return hook.jal(arguments[0])
+    elif name == '_jalr':
+        check_args(name, args, 1)
+        return hook.jalr(arguments[0])
     else:
         return None
 
@@ -158,13 +162,21 @@ def hook_instructions(name, args):
             return '_jal'
         else:
             return name
+    if name == 'jalr':
+        if len(args) == 1:
+            return '_jalr'
+        else:
+            return name
     else:
         return name
 
 
 def handle_extension(name, arguments):
     args = handle_args(arguments, True)
-    if name == 'li':
+    if name == 'nop':
+        check_args(name, args, 0)
+        return extension.nop()
+    elif name == 'li':
         check_args(name, args, 2)
         return extension.li(args[0], args[1])
     elif name == 'mv':
@@ -188,9 +200,18 @@ def handle_extension(name, arguments):
     elif name == 'jr':
         check_args(name, args, 1)
         return extension.jr(args[0])
+    elif name == 'ret':
+        check_args(name, args, 0)
+        return extension.ret()
     elif name == 'call':
         check_args(name, args, 1)
         return extension.call(args[0])
+    elif name == 'tail':
+        check_args(name, args, 1)
+        return extension.tail(args[0])
+    elif name == 'subi':
+        check_args(name, args, 3)
+        return extension.subi(args[0], args[1], args[2])
     else:
         return handle_hooked_instructions(name, args)
 
@@ -200,7 +221,7 @@ def asm(name, arguments):
 
     # 同名だが一定の解析で通常とは異なる動作をさせたい場合が存在する。
     # これをHookして、別の名前に書き換える
-    hook = hook_instructions(name, args)
+    name = hook_instructions(name, args)
     if name == 'lui':
         check_args(name, args, 2)
         return asmgen.lui(args[0], args[1])
@@ -437,6 +458,8 @@ def main():
 
     for line in open(filename).readlines():
         a = parse_line(line.strip())
+        if a is None:
+            continue
         emit(of, a)
 
 

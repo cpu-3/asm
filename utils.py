@@ -11,6 +11,7 @@ reg_d = {
     'sp': 2,
     'gp': 3,
     'tp': 4,
+    'tmp': 4,
     't0': 5,
     't1': 6,
     't2': 7,
@@ -64,7 +65,7 @@ def is_reservations(name):
 
 
 def is_number(name):
-    m = re.match(r'-\d+', name)
+    m = re.match(r'^-?\d+$', name)
     return m is not None
 
 

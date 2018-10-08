@@ -56,3 +56,34 @@ def call(imm):
 def jr(rs):
     l = [('jalr', ('x0', rs, '0'))]
     return l
+
+
+def ret():
+    l = [('jalr', ('x0', 'x1', '0'))]
+    return l
+
+
+def tail(imm):
+    imm = utils.check_and_trans_imm(imm, 32)
+    ui = str(imm >> 12)
+    li = str(imm & (1 << 12 - 1))
+    l = [
+        ('auipc', ('x6', ui)),
+        ('jalr', ('x0', 'x6', li)),
+    ]
+    return l
+
+
+def nop():
+    l = [('addi', ('x0', 'x0', '0'))]
+    return l
+
+# 嘘が入っている可能性
+def subi(rd, rs1, imm):
+    if imm[0] == '-':
+        imm = imm[1:]
+    else:
+        imm = '-' + imm
+    l = [('addi', (rd, rs1, imm))]
+    return l
+    
