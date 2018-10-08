@@ -21,13 +21,15 @@ import asmgen
 
 
 read_bytes = 0
-tags = {} # map[tag]int
+tags = {}  # map[tag]int
 
 debug = True
 
 tag_re = r'((?P<tag_name>[_|\w|.]*):)'
 r = r'^\s*' + tag_re + r'.*$'
 tag_pat = re.compile(r)
+
+
 def parse_tag_line(s):
     m = tag_pat.match(s)
     if m is not None:
@@ -43,7 +45,65 @@ def check_args(name, args, length):
     raise(Exception('Syntax Error'))
 
 
+displacement_res = r'^(?P<offset>(-?\d+)?)\((?P<reg>.+)\)$'
+displacement_re = re.compile(displacement_res)
+
+
+def match_displacement(s):
+    m = displacement_re.match(s)
+    if m is None:
+        return None
+
+    offset = m.group('offset')
+    reg = m.group('reg')
+
+    if offset == '':
+        return (0, reg)
+    else:
+        return (int(offset), reg)
+
+
+class TestDisplacementRegex(unittest.TestCase):
+    ''' Does displacement regex work correctly? '''
+
+    def test_displacement_match(self):
+        r = displacement_re
+        self.assertIsNotNone(r.match('10(sp)'))
+        self.assertIsNotNone(r.match('-10(sp)'))
+        self.assertIsNotNone(r.match('(sp)'))
+        self.assertIsNone(r.match('hoge'))
+        self.assertIsNone(r.match('100'))
+
+    def test_displacement_values(self):
+        m = displacement_re.match('-18(sp)')
+        self.assertIsNotNone(m)
+        offset = m.group('offset')
+        reg = m.group('reg')
+        self.assertEqual(offset, '-18')
+        self.assertEqual(reg, 'sp')
+
+        m = displacement_re.match('(t1)')
+        self.assertIsNotNone(m)
+        offset = m.group('offset')
+        reg = m.group('reg')
+        self.assertEqual(offset, '')
+        self.assertEqual(reg, 't1')
+
+    def test_match_dislacement_func(self):
+        self.assertEqual(match_displacement('-18(sp)'), (-18, 'sp'))
+        self.assertEqual(match_displacement('(t10)'), (0, 't10'))
+        self.assertIsNone(match_displacement('t10'))
+
+
+def handle_args(args):
+    ret = []
+    for arg in args:
+        pass
+    return ret
+
+
 def asm(name, args):
+    args = handle_args(args)
     if name == 'lui':
         check_args(name, args, 2)
         return asmgen.lui(args[0], args[1])
@@ -167,7 +227,7 @@ def asm(name, args):
 
 
 op_name_re = r'(?P<op_name>[a-zA-Z_](\w|\.)*)'
-args_re = r'(?P<args>(((-|\w|\.|%|\(|\))+,)\s*)*(-|\w|\.|%|\(|\))+)?' # 若干雑だが
+args_re = r'(?P<args>(((-|\w|\.|%|\(|\))+,)\s*)*(-|\w|\.|%|\(|\))+)?'  # 若干雑だが
 comment_q = r'(#.*)?'
 spaces = r'\s+'
 spaces_star = r'\s*'
@@ -186,11 +246,12 @@ r = ''.join([
 ])
 op_pat = re.compile(r)
 
-class TestRegexes(unittest.TestCase):
+
+class TestOperationRegex(unittest.TestCase):
     ''' does regex work correctly? '''
 
     def test_op_name_re(self):
-        r = re.compile(op_name_re + '$') # $はとりあえず仕方なく
+        r = re.compile(op_name_re + '$')  # $はとりあえず仕方なく
         self.assertIsNotNone(r.match('mov'))
         self.assertIsNotNone(r.match('MOV'))
         self.assertEqual(r.match('mov').group('op_name'), 'mov')
@@ -207,10 +268,12 @@ class TestRegexes(unittest.TestCase):
         self.assertIsNone(r.match('hoge,'))
 
     def test_all(self):
-        self.assertIsNotNone(op_pat.match('addi a1, a1,  %lo(msg)       # load msg(lo)'))
+        self.assertIsNotNone(op_pat.match(
+            'addi a1, a1,  %lo(msg)       # load msg(lo)'))
         self.assertIsNotNone(op_pat.match('jalr ra, puts'))
         self.assertIsNone(op_pat.match('_start:'))
-        self.assertIsNotNone(op_pat.match('1:	    auipc a1,     %pcrel_hi(msg) # load msg(hi)'))
+        self.assertIsNotNone(op_pat.match(
+            '1:	    auipc a1,     %pcrel_hi(msg) # load msg(hi)'))
         self.assertIsNone(op_pat.match('.globl _start'))
 
         m = op_pat.match('hoge: jalr ra, puts')
@@ -256,8 +319,9 @@ def main():
         l = line.strip()
         parse_tag_line(l)
         if parse_line(l) is not None:
-            read_bytes += 4
-    
+            # あんま綺麗じゃないなあ
+            read_bytes += len(parse_line(l))
+
     print(tags)
 
     for line in open(filename).readlines():

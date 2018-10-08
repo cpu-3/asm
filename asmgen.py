@@ -96,7 +96,7 @@ def lui(rd, imm):
     return pack([
         (0b0110111, 7),
         (rd, 5),
-        (v, 20)
+        (imm, 20)
         ])
 
 def auipc(rd, imm):
