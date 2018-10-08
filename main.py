@@ -18,6 +18,8 @@ import re
 import unittest
 
 import asmgen
+import extension
+import utils
 
 
 read_bytes = 0
@@ -30,10 +32,33 @@ r = r'^\s*' + tag_re + r'.*$'
 tag_pat = re.compile(r)
 
 
+def error_line(line):
+    print('エラーの発生した行: {}'.format(line))
+
+
 def parse_tag_line(s):
     m = tag_pat.match(s)
     if m is not None:
+        if utils.is_reservations(s):
+            print('{} は予約語です'.format(s))
         tags[m.group('tag_name')] = read_bytes
+
+
+def _solve_tag(name):
+    if name not in tags:
+        print('{} は見つかりませんでした。'.format(name))
+        raise Exception('Tag is not found')
+
+    addr = tags[name]
+    return addr
+
+    
+def solve_tag_relative(name):
+    return read_bytes - _solve_tag(name)
+
+
+def solve_tag_absolute(name):
+    return _solve_tag(addr)
 
 
 def check_args(name, args, length):
@@ -58,9 +83,9 @@ def match_displacement(s):
     reg = m.group('reg')
 
     if offset == '':
-        return (0, reg)
+        return (reg, '0')
     else:
-        return (int(offset), reg)
+        return (reg, offset)
 
 
 class TestDisplacementRegex(unittest.TestCase):
@@ -90,16 +115,45 @@ class TestDisplacementRegex(unittest.TestCase):
         self.assertEqual(reg, 't1')
 
     def test_match_dislacement_func(self):
-        self.assertEqual(match_displacement('-18(sp)'), (-18, 'sp'))
-        self.assertEqual(match_displacement('(t10)'), (0, 't10'))
+        self.assertEqual(match_displacement('-18(sp)'), ('sp', '-18'))
+        self.assertEqual(match_displacement('(t10)'), ('t10', '0'))
         self.assertIsNone(match_displacement('t10'))
 
 
 def handle_args(args):
     ret = []
     for arg in args:
-        pass
+        r = match_displacement(arg)
+        if r is not None:
+            # 再帰的にパターンが存在するかを（一応）確認する
+            l = handle_args(r)
+            ret += l
+        else:
+            ret.append(arg)
     return ret
+
+
+def handle_extension(name, args):
+    if name == 'li':
+        check_args(name, args, 2)
+        return extension.li(args[0], args[1])
+    elif name == 'mv':
+        check_args(name, args, 2)
+        return extension.mv(args[0], args[1])
+    elif name == 'bgt':
+        check_args(name, args, 3)
+        return extension.bgt(args[0], args[1], args[2])
+    elif name == 'ble':
+        check_args(name, args, 3)
+        return extension.ble(args[0], args[1], args[2])
+    elif name == 'bgtu':
+        check_args(name, args, 3)
+        return extension.bgtu(args[0], args[1], args[2])
+    elif name == 'bleu':
+        check_args(name, args, 3)
+        return extension.bleu(args[0], args[1], args[2])
+    else:
+        return None
 
 
 def asm(name, args):
@@ -222,8 +276,16 @@ def asm(name, args):
         check_args(name, args, 3)
         return asmgen.sw(args[0], args[1], args[2])
     else:
-        print('そのような命令は存在しません: {}'.format(name))
-        raise Exception('No Such Operation')
+        l = handle_extension(name, args)
+        if l is None:
+            print('そのような命令は存在しません: {}'.format(name))
+            raise Exception('No Such Operation')
+        else:
+            # 拡張命令は複数命令に渡っている可能性がある。
+            ret = bytes()
+            for (name, args) in l:
+                ret += asm(name, args)
+            return ret
 
 
 op_name_re = r'(?P<op_name>[a-zA-Z_](\w|\.)*)'
@@ -288,7 +350,11 @@ def parse_line(s):
         op_name = m.group('op_name')
         # ここかっこよくやる方法わからん
         args = m.group('args').replace(' ', '').replace('\t', '').split(',')
-        a = asm(op_name, args)
+        try:
+            a = asm(op_name, args)
+        except Exception as e:
+            error_line(s)
+            raise e
         return a
     elif debug:
         print('{} is ignored'.format(s))
@@ -323,6 +389,7 @@ def main():
             read_bytes += len(parse_line(l))
 
     print(tags)
+    asmgen.tags = tags
 
     for line in open(filename).readlines():
         a = parse_line(line.strip())
