@@ -13,7 +13,7 @@ def li(rd, imm):
 
 
 def mv(rd, rs):
-    l = [('mv', [rd, rs])]
+    l = [('addi', [rd, rs, '0'])]
     return l
 
 
@@ -34,4 +34,25 @@ def bgtu(rs, rt, imm):
 
 def bleu(rs, rt, imm):
     l = [('bgeu', (rt, rs, imm))]
+    return l
+
+
+def jump(dst):
+    l = [('jal', ('ra', dst))]
+    return l
+
+
+def call(imm):
+    imm = utils.check_and_trans_imm(imm, 32)
+    ui = str(imm >> 12)
+    li = str(imm & (1 << 12 - 1))
+    l = [
+        ('auipc', ('x6', ui)),
+        ('jalr', ('x1', 'x6', li)),
+    ]
+    return l
+
+
+def jr(rs):
+    l = [('jalr', ('x0', rs, '0'))]
     return l

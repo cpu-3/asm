@@ -43,6 +43,9 @@ reg_d = {
 
 
 def get_reg(name):
+    if type(name) != str and type(name) != bytes:
+        return None
+
     m = re.match(r'x\d{1,2}', name)
     if m is not None:
         if int(name[1:]) < 32:
@@ -68,6 +71,9 @@ def is_number(name):
 def is_special(name):
     return is_number(name) or is_reservations(name)
 
+def int2uint(imm, bit_len=32):
+    return ctypes.c_ulong(imm).value & (2 ** bit_len - 1)
+
 
 def check_and_trans_reg(name):
     r = get_reg(name)
@@ -83,7 +89,8 @@ def check_and_trans_imm(imm, size):
     except Exception as e:
         print('{} を整数に変換できませんでした'.format(imm))
         raise e
-    val = ctypes.c_ulong(val).value & (2 ** size - 1)
+
+    val = int2uint(val, size)
 
     l = len(bin(val)) - 2
     '''

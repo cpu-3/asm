@@ -19,11 +19,14 @@ import unittest
 
 import asmgen
 import extension
+import hook
 import utils
 
 
 read_bytes = 0
 tags = {}  # map[tag]int
+use_place_holder = True
+
 
 debug = True
 
@@ -41,24 +44,27 @@ def parse_tag_line(s):
     if m is not None:
         if utils.is_reservations(s):
             print('{} は予約語です'.format(s))
+            raise Exception('Name error')
         tags[m.group('tag_name')] = read_bytes
 
 
 def _solve_tag(name):
+    if use_place_holder:
+        return 0
+
     if name not in tags:
         print('{} は見つかりませんでした。'.format(name))
         raise Exception('Tag is not found')
-
     addr = tags[name]
     return addr
 
     
 def solve_tag_relative(name):
-    return read_bytes - _solve_tag(name)
+    return str(read_bytes - _solve_tag(name))
 
 
 def solve_tag_absolute(name):
-    return _solve_tag(addr)
+    return str(_solve_tag(name))
 
 
 def check_args(name, args, length):
@@ -120,7 +126,7 @@ class TestDisplacementRegex(unittest.TestCase):
         self.assertIsNone(match_displacement('t10'))
 
 
-def handle_args(args):
+def handle_args(args, relative=True):
     ret = []
     for arg in args:
         r = match_displacement(arg)
@@ -128,12 +134,36 @@ def handle_args(args):
             # 再帰的にパターンが存在するかを（一応）確認する
             l = handle_args(r)
             ret += l
+        elif not utils.is_special(arg):
+            if relative:
+                ret.append(solve_tag_relative(arg))
+            else:
+                ret.append(solve_tag_absolute(arg))
         else:
             ret.append(arg)
     return ret
 
 
-def handle_extension(name, args):
+def handle_hooked_instructions(name, arguments):
+    if name == '_jal':
+        check_args(name, args, 2)
+        return hook.jal(arguments[0])
+    else:
+        return None
+
+
+def hook_instructions(name, args):
+    if name == 'jal':
+        if len(args) == 1:
+            return '_jal'
+        else:
+            return name
+    else:
+        return name
+
+
+def handle_extension(name, arguments):
+    args = handle_args(arguments, True)
     if name == 'li':
         check_args(name, args, 2)
         return extension.li(args[0], args[1])
@@ -152,12 +182,25 @@ def handle_extension(name, args):
     elif name == 'bleu':
         check_args(name, args, 3)
         return extension.bleu(args[0], args[1], args[2])
+    elif name == 'j':
+        check_args(name, args, 1)
+        return extension.jump(args[0])
+    elif name == 'jr':
+        check_args(name, args, 1)
+        return extension.jr(args[0])
+    elif name == 'call':
+        check_args(name, args, 1)
+        return extension.call(args[0])
     else:
-        return None
+        return handle_hooked_instructions(name, args)
 
 
-def asm(name, args):
-    args = handle_args(args)
+def asm(name, arguments):
+    args = handle_args(arguments)
+
+    # 同名だが一定の解析で通常とは異なる動作をさせたい場合が存在する。
+    # これをHookして、別の名前に書き換える
+    hook = hook_instructions(name, args)
     if name == 'lui':
         check_args(name, args, 2)
         return asmgen.lui(args[0], args[1])
@@ -276,7 +319,7 @@ def asm(name, args):
         check_args(name, args, 3)
         return asmgen.sw(args[0], args[1], args[2])
     else:
-        l = handle_extension(name, args)
+        l = handle_extension(name, arguments)
         if l is None:
             print('そのような命令は存在しません: {}'.format(name))
             raise Exception('No Such Operation')
@@ -366,7 +409,7 @@ def emit(output_file, assembly):
 
 
 def main():
-    global read_bytes
+    global read_bytes, use_place_holder
 
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='source file')
@@ -390,6 +433,7 @@ def main():
 
     print(tags)
     asmgen.tags = tags
+    use_place_holder = False
 
     for line in open(filename).readlines():
         a = parse_line(line.strip())
