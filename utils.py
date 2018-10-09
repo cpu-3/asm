@@ -122,5 +122,4 @@ def pack(tuples):
     if cnt != INST_LEN:
         print('アセンブラがバグっていて、命令の長さが32bitになっていません')
         raise Exception('Bit Length Error')
-    print(bin(val))
     return struct.pack('<L', val)

@@ -1,6 +1,7 @@
 '''
- ** instant ** assembler implementation
+ # ** instant ** assembler implementation
 
+ ## 全体の構成
  fileを二回りするような実装。前提として一命令が4byteで構成されている。
  一般にアセンブラは、.s -> .oの変換を行い、.oファイルたちをリンカがリンクする
  というのが一般的だが、ファイルが複数になることはなさそうなことと、まぁそれほど
@@ -10,6 +11,19 @@
  1. タグを前から探していき、その位置を記録する
  2. 前から順に、アセンブリを機械語に変換する。このとき、jmp命令の即値は
    適切に書き換える
+
+ ## Prologue
+
+ prologueとして、一般にOSがしそうな処理を最初に追加する。この部分はコンパイラ側で何をするかで
+ 少し挙動が変化する
+ まず、spをメモリ領域の最下部に設定する。これも本来ここであるべきではないが、実質的なhook
+ ```
+   li sp, __builtin_stack_init
+ ```
+ entrypointへ、ジャンプするのは、単純に先頭にjmp命令を追加する
+ ```
+   j _min_caml_start
+ ```
 
 '''
 
@@ -27,8 +41,16 @@ read_bytes = 0
 tags = {}  # map[tag]int
 use_place_holder = True
 
+__builtin_stack_init = 0xf4240 - 4
 
-debug = True
+tags['__builtin_stack_init'] = __builtin_stack_init
+
+prologue = '''\
+li sp, __builtin_stack_init
+j _min_caml_start
+'''
+
+debug = False
 
 tag_re = r'((?P<tag_name>[_|\w|.]*):)'
 r = r'^\s*' + tag_re + r'.*$'
@@ -58,7 +80,7 @@ def _solve_tag(name):
     addr = tags[name]
     return addr
 
-    
+
 def solve_tag_relative(name):
     return str(read_bytes - _solve_tag(name))
 
@@ -146,12 +168,16 @@ def handle_args(args, relative=True):
 
 def handle_hooked_instructions(name, arguments):
     args = handle_args(arguments, True)
+    aargs = handle_args(arguments, False)
     if name == '_jal':
         check_args(name, args, 1)
-        return hook.jal(arguments[0])
+        return hook.jal(args[0])
     elif name == '_jalr':
         check_args(name, args, 1)
-        return hook.jalr(arguments[0])
+        return hook.jalr(args[0])
+    elif name == '_li':
+        check_args(name, aargs, 2)
+        return hook.li(aargs[0], aargs[1])
     else:
         return None
 
@@ -162,11 +188,16 @@ def hook_instructions(name, args):
             return '_jal'
         else:
             return name
-    if name == 'jalr':
+    elif name == 'jalr':
         if len(args) == 1:
             return '_jalr'
         else:
             return name
+    elif name == 'li':
+        if len(args) == 2 and utils.is_number(args[1]):
+            return name
+        else:
+            return '_li'
     else:
         return name
 
@@ -213,15 +244,16 @@ def handle_extension(name, arguments):
         check_args(name, args, 3)
         return extension.subi(args[0], args[1], args[2])
     else:
-        return handle_hooked_instructions(name, args)
+        return handle_hooked_instructions(name, arguments)
 
 
 def asm(name, arguments):
+    print(name)
     args = handle_args(arguments)
 
     # 同名だが一定の解析で通常とは異なる動作をさせたい場合が存在する。
     # これをHookして、別の名前に書き換える
-    name = hook_instructions(name, args)
+    name = hook_instructions(name, arguments)
     if name == 'lui':
         check_args(name, args, 2)
         return asmgen.lui(args[0], args[1])
@@ -455,6 +487,13 @@ def main():
     print(tags)
     asmgen.tags = tags
     use_place_holder = False
+
+    # prologue
+    for line in prologue.split('\n'):
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        emit(of, a)
 
     for line in open(filename).readlines():
         a = parse_line(line.strip())

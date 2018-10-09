@@ -164,7 +164,7 @@ def store(funct3, rs1, rs2, imm):
     val = (imm & 0b11111)
     val2 = (imm >> 5)
     return pack([
-        (0b0000011, 7),
+        (0b0100011, 7),
         (val, 5),
         (funct3, 3),
         (rs1, 5),
