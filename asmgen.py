@@ -15,8 +15,7 @@ def lui(rd, imm):
 
 def auipc(rd, imm):
     rd = check_and_trans_reg(rd)
-    imm = check_and_trans_imm(imm, 20)
-    v = imm & 0xfffff
+    v = check_and_trans_imm(imm, 20)
     return pack([
         (0b0010111, 7),
         (rd, 5),
@@ -25,9 +24,9 @@ def auipc(rd, imm):
 
 def bit_reorder(v, l):
     ret = 0
-    for (i, x) in enumerate(l):
-        mask = 1 << i
-        ret <<= 1
+    for x in reversed(l):
+        mask = 1 << x
+        # ret <<= 1
         ret |= mask & v
     return ret
 
@@ -35,20 +34,18 @@ def jal(rd, imm):
     rd = check_and_trans_reg(rd)
     imm = check_and_trans_imm(imm, 21)
     check_alignment(imm, 2)
-    v = imm & 0xfffff
     return pack([
         (0b1101111, 7),
         (rd, 5),
-        (bit_reorder(v, [20, *range(1, 11), 11, *range(12, 20)]), 20)
+        (bit_reorder(imm, [20, *range(10, 0, -1), 11, *range(19, 11, -1)]), 20)
     ])
 
 def jalr(rd, rs, imm):
     rd = check_and_trans_reg(rd)
     rs = check_and_trans_reg(rs)
-    imm = check_and_trans_imm(imm, 12)
-    v = imm & 0xfffff
+    v = check_and_trans_imm(imm, 12)
     return pack([
-        (0b1101111, 7),
+        (0b1100111, 7),
         (rd, 5),
         (0, 3),
         (rs, 5),
@@ -90,6 +87,7 @@ def bgeu(rs1, rs2, imm):
 
 def alui(rd, funct3, rs1, imm):
     imm = check_and_trans_imm(imm, 12)
+    print(imm)
     rd = check_and_trans_reg(rd)
     rs1 = check_and_trans_reg(rs1)
     return pack([
@@ -167,8 +165,8 @@ def store(funct3, rs1, rs2, imm):
         (0b0100011, 7),
         (val, 5),
         (funct3, 3),
-        (rs1, 5),
         (rs2, 5),
+        (rs1, 5),
         (val2, 7),
     ])
 

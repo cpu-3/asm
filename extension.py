@@ -2,10 +2,9 @@ import utils
 
 
 def li(rd, imm):
-    print(rd, imm)
     imm = utils.check_and_trans_imm(imm, 32)
     ui = str(imm >> 12)
-    li = str(imm & (1 << 12 - 1))
+    li = str(imm & ((1 << 12) - 1))
     l = [
         ('lui', [rd, ui]),
         ('addi', [rd, rd, li])
@@ -45,8 +44,9 @@ def jump(dst):
 
 def call(imm):
     imm = utils.check_and_trans_imm(imm, 32)
-    ui = str(imm >> 12)
-    li = str(imm & (1 << 12 - 1))
+    ui = str((imm >> 12) + ((imm >> 11) & 1))
+    li = str(imm & ((1 << 12) - 1))
+    print(ui, li)
     l = [
         ('auipc', ('x6', ui)),
         ('jalr', ('x1', 'x6', li)),

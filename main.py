@@ -50,7 +50,7 @@ li sp, __builtin_stack_init
 j _min_caml_start
 '''
 
-debug = False
+debug = True
 
 tag_re = r'((?P<tag_name>[_|\w|.]*):)'
 r = r'^\s*' + tag_re + r'.*$'
@@ -82,7 +82,7 @@ def _solve_tag(name):
 
 
 def solve_tag_relative(name):
-    return str(read_bytes - _solve_tag(name))
+    return str(_solve_tag(name) - read_bytes)
 
 
 def solve_tag_absolute(name):
@@ -91,6 +91,8 @@ def solve_tag_absolute(name):
 
 def check_args(name, args, length):
     if (len(args) == length):
+        if (debug):
+            print('{}: {}, {}'.format(read_bytes, name, args))
         return
 
     print('{} should have {} args. But got {}'.format(name, length, len(args)))
@@ -248,7 +250,6 @@ def handle_extension(name, arguments):
 
 
 def asm(name, arguments):
-    print(name)
     args = handle_args(arguments)
 
     # 同名だが一定の解析で通常とは異なる動作をさせたい場合が存在する。
@@ -441,6 +442,7 @@ class TestOperationRegex(unittest.TestCase):
 
 
 def parse_line(s):
+    # print('{}: {}'.format(read_bytes, s))
     m = op_pat.match(s)
     if m is not None:
         op_name = m.group('op_name')
@@ -477,6 +479,12 @@ def main():
 
     of = open(output, 'wb')
 
+    for line in prologue.split('\n'):
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+
     for line in open(filename).readlines():
         l = line.strip()
         parse_tag_line(l)
@@ -487,18 +495,21 @@ def main():
     print(tags)
     asmgen.tags = tags
     use_place_holder = False
+    read_bytes = 0
 
     # prologue
     for line in prologue.split('\n'):
         a = parse_line(line.strip())
         if a is None:
             continue
+        read_bytes += len(a)
         emit(of, a)
 
     for line in open(filename).readlines():
         a = parse_line(line.strip())
         if a is None:
             continue
+        read_bytes += len(a)
         emit(of, a)
 
 
