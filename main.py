@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
  # ** instant ** assembler implementation
 
@@ -38,6 +39,7 @@ import utils
 
 
 read_bytes = 0
+emit_coe = False
 tags = {}  # map[tag]int
 use_place_holder = True
 
@@ -460,14 +462,27 @@ def parse_line(s):
 
 
 def emit(output_file, assembly):
-    output_file.write(assembly)
+    if emit_coe:
+        h = ',\n'.join([hex(x)[2:] for x in assembly])
+        output_file.write((h + ',\n').encode('ascii'))
+    else:
+        output_file.write(assembly)
 
+
+coe_prologue = b'''\
+memory_initialization_radix=16;
+memory_initialization_vector=
+'''
+coe_epilogue = b'''\
+0;
+'''
 
 def main():
-    global read_bytes, use_place_holder
+    global read_bytes, use_place_holder, emit_coe
 
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='source file')
+    parser.add_argument('-c', '--coe', help='dump coe', action='store_true')
     parser.add_argument('--output', help='output file')
 
     args = parser.parse_args()
@@ -475,9 +490,16 @@ def main():
     if args.output:
         output = args.output
     else:
-        output = 'a.out'
-
+        if args.coe:
+            output = 'a.coe'
+        else:
+            output = 'a.out'
     of = open(output, 'wb')
+
+    if args.coe:
+        emit_coe = True
+        of.write(coe_prologue)
+
 
     for line in prologue.split('\n'):
         a = parse_line(line.strip())
@@ -511,6 +533,10 @@ def main():
             continue
         read_bytes += len(a)
         emit(of, a)
+    
+    # prologue
+    if emit_coe:
+        of.write(coe_epilogue)
 
 
 def test():
