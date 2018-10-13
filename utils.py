@@ -111,6 +111,18 @@ def check_alignment(imm, size):
 
 
 def pack(tuples):
+
+    # MSBとLSBが分からなかった人間の末路
+    reordered = []
+    for (x, l) in tuples:
+        val = 0
+        for _ in range(l):
+            tmp = x & 1
+            x >>= 1
+            val <<= 1
+            val |= tmp
+        reordered.append((val, l))
+    tuples = reordered
     # check
     cnt = 0
     val = 0
@@ -124,6 +136,7 @@ def pack(tuples):
     ret = 0
     for _ in range(32):
         tmp = val & 1
+        val >>= 1
         ret <<= 1
         ret |= tmp
 
