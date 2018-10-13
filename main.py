@@ -463,7 +463,14 @@ def parse_line(s):
 
 def emit(output_file, assembly):
     if emit_coe:
-        h = ',\n'.join([hex(x)[2:] for x in assembly])
+        l = [hex(x)[2:] for x in assembly]
+        r = []
+        if len(l) % 4 != 0:
+            print('命令列のうち4byte alignedでないものが存在します')
+            raise Exception('Alignment error')
+        for i in range(len(l) // 4):
+            r.append(''.join(l[4 * i: 4 * (i + 1)]))
+        h = ',\n'.join(r)
         output_file.write((h + ',\n').encode('ascii'))
     else:
         output_file.write(assembly)
