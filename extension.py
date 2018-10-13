@@ -46,10 +46,9 @@ def call(imm):
     imm = utils.check_and_trans_imm(imm, 32)
     ui = str((imm >> 12) + ((imm >> 11) & 1))
     li = str(imm & ((1 << 12) - 1))
-    print(ui, li)
     l = [
-        ('auipc', ('x6', ui)),
-        ('jalr', ('x1', 'x6', li)),
+        ('auipc', ('x1', ui)),
+        ('jalr', ('x1', 'x1', li)),
     ]
     return l
 

@@ -56,8 +56,8 @@ def branch(imm, funct3, rs1, rs2):
     imm = check_and_trans_imm(imm, 13)
     rs1 = check_and_trans_reg(rs1)
     rs2 = check_and_trans_reg(rs2)
-    val = ((imm >> 1) & 0b1111) | ((imm >> 11) & 1)
-    val2 = ((imm >> 5) & 0b111111) | ((imm >> 12) & 1)
+    val = (((imm >> 1) & 0b1111) << 1) | ((imm >> 11) & 1)
+    val2 = ((imm >> 5) & 0b111111) | (((imm >> 12) & 1) << 6)
     return pack([
         (0b1100011, 7),
         (val, 5),
