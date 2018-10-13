@@ -118,8 +118,16 @@ def pack(tuples):
         val <<= length
         val += code
         cnt += length
+    
+    # 悲しいね
+    # MSBとLSBも分からない人間になった。人生終了です
+    ret = 0
+    for _ in range(32):
+        tmp = val & 1
+        ret <<= 1
+        ret |= tmp
 
     if cnt != INST_LEN:
         print('アセンブラがバグっていて、命令の長さが32bitになっていません')
         raise Exception('Bit Length Error')
-    return struct.pack('<L', val)
+    return struct.pack('<L', ret)

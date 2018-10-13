@@ -30,5 +30,5 @@ fib:
     addi    sp,sp,48
     jr    ra
 _min_caml_start:
-    addi    a0, zero, 5
+    addi    a0, zero, 6
     call    fib
