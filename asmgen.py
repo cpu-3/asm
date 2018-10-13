@@ -24,10 +24,10 @@ def auipc(rd, imm):
 
 def bit_reorder(v, l):
     ret = 0
-    for x in reversed(l):
-        mask = 1 << x
-        # ret <<= 1
-        ret |= mask & v
+    for x in l:
+        tmp = (v >> x) & 1
+        ret <<= 1
+        ret |= tmp
     return ret
 
 def jal(rd, imm):
