@@ -1,3 +1,7 @@
+min_caml_print_int_led:
+    li s11, 65544
+    sw a0, 0(s11)
+    jr ra
 fib:
     addi    sp,sp,-48
     sw    ra,40(sp)
@@ -32,3 +36,4 @@ fib:
 _min_caml_start:
     addi    a0, zero, 6
     call    fib
+    call min_caml_print_int_led
