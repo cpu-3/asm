@@ -458,10 +458,39 @@ class TestOperationRegex(unittest.TestCase):
         self.assertEqual(m.group('op_name'), 'jalr')
         self.assertEqual(m.group('args'), 'ra, puts')
 
+dec_num = r'(-?[1-9][0-9]*|0)'
+number = r'(?P<value>' + dec_num + ')'
+r = ''.join([
+    '^',
+    spaces_star,
+    tag_re,
+    '?',
+    spaces_star,
+    '.word',
+    spaces,
+    number,
+    spaces_star,
+    comment_q,
+    spaces_star,
+    '$'
+])
+const_pat = re.compile(r)
+
+
+class TestConstantRegex(unittest.TestCase):
+    def test_constant(self):
+        self.assertIsNotNone(const_pat.match('hoge:\t.word	1075838976'))
+        self.assertIsNotNone(const_pat.match('\t.word       0 #zero'))
+        self.assertIsNone(const_pat.match('hoge: jalr ra, puts'))
+
+        m = const_pat.match('\t.word\t1075838976')
+        self.assertEqual(m.group('value'), '1075838976')
+
 
 def parse_line(s):
     # print('{}: {}'.format(read_bytes, s))
     m = op_pat.match(s)
+    m2 = const_pat.match(s)
     if m is not None:
         op_name = m.group('op_name')
         # ここかっこよくやる方法わからん
