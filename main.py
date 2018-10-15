@@ -182,6 +182,12 @@ def handle_hooked_instructions(name, arguments):
     elif name == '_li':
         check_args(name, aargs, 2)
         return hook.li(aargs[0], aargs[1])
+    elif name == '_add':
+        check_args(name, args, 3)
+        return hook.add(args[0], args[1], args[2])
+    elif name == '_sub':
+        check_args(name, args, 3)
+        return hook.sub(args[0], args[1], args[2])
     else:
         return None
 
@@ -202,6 +208,16 @@ def hook_instructions(name, args):
             return name
         else:
             return '_li'
+    elif name == 'add':
+        if len(args) == 3 and utils.is_number(args[2]):
+            return '_add'
+        else:
+            return name
+    elif name == 'sub':
+        if len(args) == 3 and utils.is_number(args[2]):
+            return '_sub'
+        else:
+            return name
     else:
         return name
 
