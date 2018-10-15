@@ -94,7 +94,7 @@ def solve_tag_absolute(name):
 def check_args(name, args, length):
     if (len(args) == length):
         if (debug):
-            print('{}: {}, {}'.format(read_bytes, name, args))
+            print('{}: {}, {}'.format(hex(read_bytes)[2:], name, ','.join(args)))
         return
 
     print('{} should have {} args. But got {}'.format(name, length, len(args)))
@@ -461,9 +461,17 @@ def parse_line(s):
     return None
 
 
+
 def emit(output_file, assembly):
+    def hex2(x):
+        s = hex(x)[2:]
+        if len(s) == 1:
+            return '0' + s
+        else:
+            return s
+
     if emit_coe:
-        l = [hex(x)[2:] for x in assembly]
+        l = [hex2(x) for x in assembly]
         r = []
         if len(l) % 4 != 0:
             print('命令列のうち4byte alignedでないものが存在します')
