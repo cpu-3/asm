@@ -249,3 +249,31 @@ def and_(rd, rs1, rs2):
     rs1 = check_and_trans_reg(rs1)
     rs2 = check_and_trans_reg(rs2)
     return pack_alu(0b0110011, rd, 0b111, rs1, rs2, 0b0000000)
+
+
+def flw(rd, rs, imm):
+    pass
+
+
+def fsw(rd, rs, imm):
+    pass
+
+
+def fadd(rd, rs1, rs2):
+    pass
+
+
+def fsub(rd, rs1, rs2):
+    pass
+
+
+def fmul(rd, rs1, rs2):
+    pass
+
+
+def fdiv(rd, rs1, rs2):
+    pass
+
+
+def fsqrt(rd, rs):
+    pass

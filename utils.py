@@ -69,11 +69,20 @@ def is_number(name):
     return m is not None
 
 
+def num2str(s):
+    return int(s)
+
+
 def is_special(name):
     return is_number(name) or is_reservations(name)
 
+
 def int2uint(imm, bit_len=32):
     return ctypes.c_ulong(imm).value & (2 ** bit_len - 1)
+
+
+def int2u32b(v):
+    return struct.pack('<L', int2uint(v))
 
 
 def check_and_trans_reg(name):
@@ -86,7 +95,7 @@ def check_and_trans_reg(name):
 
 def check_and_trans_imm(imm, size):
     try:
-        val = int(imm)
+        val = num2str(imm)
     except Exception as e:
         print('{} を整数に変換できませんでした'.format(imm))
         raise e

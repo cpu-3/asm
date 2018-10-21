@@ -390,6 +390,27 @@ def asm(name, arguments):
     elif name == 'sw':
         check_args(name, args, 3)
         return asmgen.sw(args[0], args[1], args[2])
+    elif name == 'flw':
+        check_args(name, args, 3)
+        return asmgen.flw(args[0], args[1], args[2])
+    elif name == 'fsw':
+        check_args(name, args, 3)
+        return asmgen.fsw(args[0], args[1], args[2])
+    elif name == 'fadd.s':
+        check_args(name, args, 3)
+        return asmgen.fadd(args[0], args[1], args[2])
+    elif name == 'fsub.s':
+        check_args(name, args, 3)
+        return asmgen.fsub(args[0], args[1], args[2])
+    elif name == 'fmul.s':
+        check_args(name, args, 3)
+        return asmgen.fmul(args[0], args[1], args[2])
+    elif name == 'fdiv.s':
+        check_args(name, args, 3)
+        return asmgen.fdiv(args[0], args[1], args[2])
+    elif name == 'fsqrt.s':
+        check_args(name, args, 2)
+        return asmgen.sqrt(args[0], args[1])
     else:
         l = handle_extension(name, arguments)
         if l is None:
@@ -408,14 +429,16 @@ args_re = r'(?P<args>(((-|\w|\.|%|\(|\))+,)\s*)*(-|\w|\.|%|\(|\))+)?'  # 若干�
 comment_q = r'(#.*)?'
 spaces = r'\s+'
 spaces_star = r'\s*'
+space_args = '(' + spaces+args_re + ')'
+no_args = spaces_star
+args = '(' + space_args + '|' + no_args + ')'
 r = ''.join([
     spaces_star,
     tag_re,
     '?',
     spaces_star,
     op_name_re,
-    spaces,
-    args_re,
+    args,
     spaces_star,
     comment_q,
     spaces_star,
@@ -451,7 +474,11 @@ class TestOperationRegex(unittest.TestCase):
         self.assertIsNone(op_pat.match('_start:'))
         self.assertIsNotNone(op_pat.match(
             '1:	    auipc a1,     %pcrel_hi(msg) # load msg(hi)'))
+        self.assertIsNotNone(op_pat.match(
+            'ret'
+        ))
         self.assertIsNone(op_pat.match('.globl _start'))
+        self.assertIsNotNone(op_pat.match('	flw	fa5,%lo(.LC1)(a5)'))
 
         m = op_pat.match('hoge: jalr ra, puts')
         self.assertEqual(m.group('tag_name'), 'hoge')
@@ -494,17 +521,24 @@ def parse_line(s):
     if m is not None:
         op_name = m.group('op_name')
         # ここかっこよくやる方法わからん
-        args = m.group('args').replace(' ', '').replace('\t', '').split(',')
+        g = m.group('args')
+        if g is None:
+            args = []
+        else:
+            args = m.group('args').replace(' ', '').replace('\t', '').split(',')
         try:
             a = asm(op_name, args)
         except Exception as e:
             error_line(s)
             raise e
         return a
+    elif m2 is not None:
+        value = m.group('value')
+        i = utils.check_and_trans_imm(value, 32)
+        return utils.int2u32b(i)
     elif debug:
         print('{} is ignored'.format(s))
     return None
-
 
 
 def emit(output_file, assembly):
