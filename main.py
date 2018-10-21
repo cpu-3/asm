@@ -29,6 +29,7 @@
 '''
 
 import argparse
+import os
 import re
 import unittest
 
@@ -60,6 +61,8 @@ debug = True
 tag_re = r'((?P<tag_name>[_|\w|.]*):)'
 r = r'^\s*' + tag_re + r'.*$'
 tag_pat = re.compile(r)
+
+lib_data = ''
 
 
 def error_line(line):
@@ -628,6 +631,13 @@ def main():
             continue
         read_bytes += len(a)
 
+    for line in lib_data.split('\n'):
+        a = parse_line(line.strip())
+        parse_tag_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+
     for line in open(filename).readlines():
         l = line.strip()
         parse_tag_line(l)
@@ -642,6 +652,13 @@ def main():
 
     # prologue
     for line in prologue.split('\n'):
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+        emit(of, a)
+    
+    for line in lib_data.split('\n'):
         a = parse_line(line.strip())
         if a is None:
             continue
@@ -665,4 +682,15 @@ def test():
 
 
 if __name__ == '__main__':
+    libfile = 'libmincaml.S'
+    if not os.path.exists(''):
+        import urllib.request
+        url = 'https://raw.githubusercontent.com/cpu-3/compiler/master/libmincaml.S'
+        with urllib.request.urlopen(url) as response:
+            data = response.read()
+            with open(libfile, 'wb') as f:
+                f.write(data)
+    with open(libfile) as f:
+        lib_data = f.read()
+
     main()
