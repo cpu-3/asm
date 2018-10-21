@@ -58,6 +58,11 @@ def jr(rs):
     return l
 
 
+def jrl(rs):
+    l = [('jalr', ('x1', rs, '0'))]
+    return l
+
+
 def ret():
     l = [('jalr', ('x0', 'x1', '0'))]
     return l
@@ -86,4 +91,4 @@ def subi(rd, rs1, imm):
         imm = '-' + imm
     l = [('addi', (rd, rs1, imm))]
     return l
-    
+
