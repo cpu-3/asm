@@ -372,6 +372,9 @@ def asm(name, arguments):
     elif name == 'srai':
         check_args(name, args, 3)
         return asmgen.srai(args[0], args[1], args[2])
+    elif name == 'srli':
+        check_args(name, args, 3)
+        return asmgen.srli(args[0], args[1], args[2])
     elif name == 'lb':
         check_args(name, args, 3)
         return asmgen.lb(args[0], args[1], args[2])
@@ -387,7 +390,7 @@ def asm(name, arguments):
     elif name == 'lhu':
         check_args(name, args, 3)
         return asmgen.lhu(args[0], args[1], args[2])
-    elif name == 'lhb':
+    elif name == 'sb':
         check_args(name, args, 3)
         return asmgen.sb(args[0], args[1], args[2])
     elif name == 'sh':
