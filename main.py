@@ -416,7 +416,25 @@ def asm(name, arguments):
         return asmgen.fdiv(args[0], args[1], args[2])
     elif name == 'fsqrt.s':
         check_args(name, args, 2)
-        return asmgen.sqrt(args[0], args[1])
+        return asmgen.fsqrt(args[0], args[1])
+    elif name == 'flt.s':
+        check_args(name, args, 3)
+        return asmgen.flt(args[0], args[1], args[2])
+    elif name == 'feq.s':
+        check_args(name, args, 3)
+        return asmgen.feq(args[0], args[1], args[2])
+    elif name == 'fle.s':
+        check_args(name, args, 3)
+        return asmgen.fle(args[0], args[1], args[2])
+    elif name == 'fsgnj.s':
+        check_args(name, args, 3)
+        return asmgen.fsgnj(args[0], args[1], args[2])
+    elif name == 'fsgnjn.s':
+        check_args(name, args, 3)
+        return asmgen.fsgnjn(args[0], args[1], args[2])
+    elif name == 'fsgnjx.s':
+        check_args(name, args, 3)
+        return asmgen.fsgnjx(args[0], args[1], args[2])
     else:
         l = handle_extension(name, arguments)
         if l is None:

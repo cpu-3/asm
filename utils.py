@@ -48,7 +48,7 @@ def get_reg(name):
     if type(name) != str and type(name) != bytes:
         return None
 
-    m = re.match(r'x\d{1,2}', name)
+    m = re.match(r'(x|f)\d{1,2}', name)
     if m is not None:
         if int(name[1:]) < 32:
             return int(name[1:])

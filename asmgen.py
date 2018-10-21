@@ -4,6 +4,8 @@ from utils import check_and_trans_reg
 from utils import pack
 
 
+default_rm = 0b000
+
 def lui(rd, imm):
     rd = check_and_trans_reg(rd)
     imm = check_and_trans_imm(imm, 20)
@@ -260,29 +262,90 @@ def and_(rd, rs1, rs2):
     return pack_alu(0b0110011, rd, 0b111, rs1, rs2, 0b0000000)
 
 
-def flw(rd, rs, imm):
-    pass
+def flw(rd, rs1, imm):
+    imm = check_and_trans_imm(imm, 12)
+    rd = check_and_trans_reg(rd)
+    rs1 = check_and_trans_reg(rs1)
+    return pack([
+        (0b0000111, 7),
+        (rd, 5),
+        (0b010, 3),
+        (rs1, 5),
+        (imm, 12)
+    ])
 
 
-def fsw(rd, rs, imm):
-    pass
+def fsw(rs1, rs2, imm):
+    imm = check_and_trans_imm(imm, 12)
+    rs1 = check_and_trans_reg(rs1)
+    rs2 = check_and_trans_reg(rs2)
+    val = (imm & 0b11111)
+    val2 = (imm >> 5)
+    return pack([
+        (0b0100111, 7),
+        (val, 5),
+        (0b010, 3),
+        (rs2, 5),
+        (rs1, 5),
+        (val2, 7),
+    ])
+
+
+def falu(rd, rm, rs1, rs2, funct7):
+    rd = check_and_trans_reg(rd)
+    rs1 = check_and_trans_reg(rs1)
+    rs2 = check_and_trans_reg(rs2)
+    l = [
+        (0b1010011, 7),
+        (rd, 5),
+        (rm, 3),
+        (rs1, 5),
+        (rs2, 5),
+        (funct7, 7)
+        ]
+    return pack(l)
 
 
 def fadd(rd, rs1, rs2):
-    pass
+    return falu(rd, default_rm, rs1, rs2, 0b0000000)
 
 
 def fsub(rd, rs1, rs2):
-    pass
+    return falu(rd, default_rm, rs1, rs2, 0b0000100)
 
 
 def fmul(rd, rs1, rs2):
-    pass
+    return falu(rd, default_rm, rs1, rs2, 0b0001000)
 
 
 def fdiv(rd, rs1, rs2):
-    pass
+    return falu(rd, default_rm, rs1, rs2, 0b0001100)
 
 
 def fsqrt(rd, rs):
-    pass
+    # 'x0' -> 00000
+    return falu(rd, default_rm, rs, 'x0', 0b0101100)
+
+
+def feq(rd, rs1, rs2):
+    return falu(rd, 0b010, rs1, rs2, 0b1010000)
+
+
+def flt(rd, rs1, rs2):
+    return falu(rd, 0b001, rs1, rs2, 0b1010000)
+
+
+def fle(rd, rs1, rs2):
+    return falu(rd, 0b000, rs1, rs2, 0b1010000)
+
+
+def fsgnj(rd, rs1, rs2):
+    return falu(rd, 0b000, rs1, rs2, 0b0010000)
+
+
+def fsgnjn(rd, rs1, rs2):
+    return falu(rd, 0b001, rs1, rs2, 0b0010000)
+
+
+def fsgnjx(rd, rs1, rs2):
+    return falu(rd, 0b010, rs1, rs2, 0b0010000)
