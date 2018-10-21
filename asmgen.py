@@ -87,7 +87,6 @@ def bgeu(rs1, rs2, imm):
 
 def alui(rd, funct3, rs1, imm):
     imm = check_and_trans_imm(imm, 12)
-    print(imm)
     rd = check_and_trans_reg(rd)
     rs1 = check_and_trans_reg(rs1)
     return pack([
@@ -99,7 +98,17 @@ def alui(rd, funct3, rs1, imm):
     ])
 
 def shift(rd, funct3, rs1, imm1, imm2):
-    return alui(rd, funct3, rs1, imm1 | (imm2 << 5))
+    imm1 = check_and_trans_imm(imm1, 7)
+    rd = check_and_trans_reg(rd)
+    rs1 = check_and_trans_reg(rs1)
+    return pack([
+        (0b0010011, 7),
+        (rd, 5),
+        (funct3, 3),
+        (rs1, 5),
+        (imm1, 5),
+        (imm2, 7)
+    ])
 
 def addi(rd, rs1, imm):
     return alui(rd, 0b000, rs1, imm)
