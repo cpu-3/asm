@@ -253,10 +253,10 @@ def handle_extension(name, arguments):
         return extension.jump(args[0])
     elif name == 'jr':
         check_args(name, args, 1)
-        return extension.jrl(args[0])
+        return extension.jr(args[0])
     elif name == 'jrl':
         check_args(name, args, 1)
-        return extension.jr(args[0])
+        return extension.jrl(args[0])
     elif name == 'ret':
         check_args(name, args, 0)
         return extension.ret()
