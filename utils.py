@@ -10,7 +10,8 @@ reg_d = {
     'ra': 1,
     'sp': 2,
     'gp': 3,
-    'tp': 4,
+    # 'tp': 4, # 使わない。代わりにheap pointerとして使う
+    'hp': 4,
     'tmp': 4,
     't0': 5,
     't1': 6,
@@ -139,7 +140,7 @@ def pack(tuples):
         val <<= length
         val += code
         cnt += length
-    
+
     # 悲しいね
     # MSBとLSBも分からない人間になった。人生終了です
     ret = 0

@@ -44,11 +44,14 @@ tags = {}  # map[tag]int
 use_place_holder = True
 
 __builtin_stack_init = 0xf4240 - 4
+__builtin_heap_init = 0x10fff
 
 tags['__builtin_stack_init'] = __builtin_stack_init
+tags['__builtin_heap_init'] = __builtin_heap_init
 
 prologue = '''\
 li sp, __builtin_stack_init
+li hp, __builtin_heap_init
 j _min_caml_start
 '''
 
@@ -630,7 +633,7 @@ def main():
             continue
         read_bytes += len(a)
         emit(of, a)
-    
+
     # prologue
     if emit_coe:
         of.write(coe_epilogue)
