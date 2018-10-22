@@ -55,6 +55,8 @@ def get_reg(name):
 
     if name in reg_d:
         return reg_d[name]
+    if name[0] == 'f' and name[1:] in reg_d:
+        return reg_d[name[1:]]
     return None
 
 

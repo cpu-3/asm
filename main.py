@@ -272,6 +272,9 @@ def handle_extension(name, arguments):
     elif name == 'subi':
         check_args(name, args, 3)
         return extension.subi(args[0], args[1], args[2])
+    elif name == 'fmv.s':
+        check_args(name, args, 2)
+        return extension.fmv(args[0], args[1])
     else:
         return handle_hooked_instructions(name, arguments)
 
@@ -563,7 +566,7 @@ def parse_line(s):
             raise e
         return a
     elif m2 is not None:
-        value = m.group('value')
+        value = m2.group('value')
         i = utils.check_and_trans_imm(value, 32)
         return utils.int2u32b(i)
     elif debug:
