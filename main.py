@@ -254,6 +254,9 @@ def handle_extension(name, arguments):
     elif name == 'j':
         check_args(name, args, 1)
         return extension.jump(args[0])
+    elif name == 'jl':
+        check_args(name, args, 1)
+        return extension.jumpl(args[0])
     elif name == 'jr':
         check_args(name, args, 1)
         return extension.jr(args[0])

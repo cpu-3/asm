@@ -36,8 +36,11 @@ def bleu(rs, rt, imm):
     l = [('bgeu', (rt, rs, imm))]
     return l
 
-
 def jump(dst):
+    l = [('jal', ('x0', dst))]
+    return l
+
+def jumpl(dst):
     l = [('jal', ('ra', dst))]
     return l
 
