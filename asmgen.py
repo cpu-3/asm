@@ -349,3 +349,11 @@ def fsgnjn(rd, rs1, rs2):
 
 def fsgnjx(rd, rs1, rs2):
     return falu(rd, 0b010, rs1, rs2, 0b0010000)
+
+
+def fcvt_w_s(rd, rs):
+    return falu(rd, default_rm, rs, 'x0', 0b1100000)
+
+
+def fcvt_s_w(rd, rs):
+    return falu(rd, default_rm, rs, 'x0', 0b1101000)

@@ -444,6 +444,12 @@ def asm(name, arguments):
     elif name == 'fsgnjx.s':
         check_args(name, args, 3)
         return asmgen.fsgnjx(args[0], args[1], args[2])
+    elif name == 'fcvt.w.s':
+        check_args(name, args, 2)
+        return asmgen.fcvt_w_s(args[0], args[1])
+    elif name == 'fcvt.s.w':
+        check_args(name, args, 2)
+        return asmgen.fcvt_s_w(args[0], args[1])
     else:
         l = handle_extension(name, arguments)
         if l is None:

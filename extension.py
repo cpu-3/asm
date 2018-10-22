@@ -92,5 +92,6 @@ def subi(rd, rs1, imm):
     l = [('addi', (rd, rs1, imm))]
     return l
 
+
 def fmv(rd, rs):
     return [('fsgnj.s', (rd, rs, rs))]
