@@ -278,6 +278,9 @@ def handle_extension(name, arguments):
     elif name == 'fmv.s':
         check_args(name, args, 2)
         return extension.fmv(args[0], args[1])
+    elif name == 'fneg.s':
+        check_args(name, args, 2)
+        return extension.fneg(args[0], args[1])
     else:
         return handle_hooked_instructions(name, arguments)
 
@@ -426,9 +429,6 @@ def asm(name, arguments):
     elif name == 'fdiv.s':
         check_args(name, args, 3)
         return asmgen.fdiv(args[0], args[1], args[2])
-    elif name == 'fneg.s':
-        check_args(name, args, 2)
-        return extension.fneg(args[0], args[1])
     elif name == 'fsqrt.s':
         check_args(name, args, 2)
         return asmgen.fsqrt(args[0], args[1])
