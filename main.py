@@ -254,6 +254,9 @@ def handle_extension(name, arguments):
     elif name == 'j':
         check_args(name, args, 1)
         return extension.jump(args[0])
+    elif name == 'jl':
+        check_args(name, args, 1)
+        return extension.jumpl(args[0])
     elif name == 'jr':
         check_args(name, args, 1)
         return extension.jr(args[0])
@@ -275,6 +278,9 @@ def handle_extension(name, arguments):
     elif name == 'fmv.s':
         check_args(name, args, 2)
         return extension.fmv(args[0], args[1])
+    elif name == 'fneg.s':
+        check_args(name, args, 2)
+        return extension.fneg(args[0], args[1])
     else:
         return handle_hooked_instructions(name, arguments)
 
