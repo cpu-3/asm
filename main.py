@@ -660,7 +660,7 @@ def main():
             continue
         read_bytes += len(a)
         emit(of, a)
-    
+
     for line in lib_data.split('\n'):
         a = parse_line(line.strip())
         if a is None:
@@ -685,8 +685,9 @@ def test():
 
 
 if __name__ == '__main__':
-    libfile = 'libmincaml.S'
-    if not os.path.exists(''):
+    libfile = '../compiler/libmincaml.S'
+    if not os.path.exists(libfile):
+        libfile = '/tmp/libmincaml.S'
         import urllib.request
         url = 'https://raw.githubusercontent.com/cpu-3/compiler/master/libmincaml.S'
         with urllib.request.urlopen(url) as response:
@@ -694,6 +695,7 @@ if __name__ == '__main__':
             with open(libfile, 'wb') as f:
                 f.write(data)
     with open(libfile) as f:
+        print('libmincaml.S: reading from {}'.format(libfile))
         lib_data = f.read()
 
     main()
