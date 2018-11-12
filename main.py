@@ -75,6 +75,9 @@ def parse_tag_line(s):
         if utils.is_reservations(s):
             print('{} は予約語です'.format(s))
             raise Exception('Name error')
+        name = m.group('tag_name')
+        if name in tags:
+            raise Exception('Collision occurred: {}'.format(name))
         tags[m.group('tag_name')] = read_bytes
 
 
