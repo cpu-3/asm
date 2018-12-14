@@ -77,7 +77,8 @@ def parse_tag_line(s):
             raise Exception('Name error')
         name = m.group('tag_name')
         if name in tags:
-            raise Exception('Collision occurred: {}'.format(name))
+            #raise Exception('Collision occurred: {}'.format(name))
+            pass
         tags[m.group('tag_name')] = read_bytes
 
 
@@ -626,6 +627,9 @@ def main():
     parser.add_argument('filename', help='source file')
     parser.add_argument('-c', '--coe', help='dump coe', action='store_true')
     parser.add_argument('--output', help='output file')
+    parser.add_argument('--no-prologue',
+            help='assemble without prologue',
+            action='store_true')
 
     args = parser.parse_args()
     filename = args.filename
@@ -669,12 +673,13 @@ def main():
     read_bytes = 0
 
     # prologue
-    for line in prologue.split('\n'):
-        a = parse_line(line.strip())
-        if a is None:
-            continue
-        read_bytes += len(a)
-        emit(of, a)
+    if not args.no_prologue:
+        for line in prologue.split('\n'):
+            a = parse_line(line.strip())
+            if a is None:
+                continue
+            read_bytes += len(a)
+            emit(of, a)
 
     for line in lib_data.split('\n'):
         a = parse_line(line.strip())
