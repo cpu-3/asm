@@ -647,11 +647,12 @@ def main():
         of.write(coe_prologue)
 
 
-    for line in prologue.split('\n'):
-        a = parse_line(line.strip())
-        if a is None:
-            continue
-        read_bytes += len(a)
+    if not args.no_prologue:
+        for line in prologue.split('\n'):
+            a = parse_line(line.strip())
+            if a is None:
+                continue
+            read_bytes += len(a)
 
     for line in lib_data.split('\n'):
         a = parse_line(line.strip())
