@@ -94,7 +94,7 @@ def _solve_tag(name):
 
 
 def solve_tag_relative(name):
-    return str(_solve_tag(name) - read_bytes)
+    return str(_solve_tag(name) - read_bytes - 4)
 
 
 def solve_tag_absolute(name):
