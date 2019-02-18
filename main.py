@@ -35,6 +35,7 @@ import unittest
 
 import asmgen
 import extension
+import heap
 import hook
 import utils
 
@@ -45,7 +46,7 @@ tags = {}  # map[tag]int
 use_place_holder = True
 
 __builtin_stack_init = 0xf4240 - 4
-__builtin_heap_init =  0x21000
+__builtin_heap_init =  0x25000
 
 tags['__builtin_stack_init'] = __builtin_stack_init
 tags['__builtin_heap_init'] = __builtin_heap_init
@@ -87,8 +88,10 @@ def _solve_tag(name):
         return 0
 
     if name not in tags:
-        print('{} は見つかりませんでした。'.format(name))
-        raise Exception('Tag is not found')
+        print(name, hex(heap.get(name)))
+        return heap.get(name)
+        #print('{} は見つかりませんでした。'.format(name))
+        #raise Exception('Tag is not found')
     addr = tags[name]
     return addr
 
@@ -695,6 +698,14 @@ def main():
             continue
         read_bytes += len(a)
         emit(of, a)
+
+    for i in range((0x21000 - read_bytes) // 4):
+        emit(of, b'\x00' * 4)
+    import struct
+    with open("heap_file.out", "r") as f:
+        l = f.read().strip().split('\n')
+        for x in l:
+            emit(of, struct.pack("<I", int(x, 16)))
 
     # prologue
     if emit_coe:
