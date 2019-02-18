@@ -702,7 +702,7 @@ def main():
     for i in range((0x21000 - read_bytes) // 4):
         emit(of, b'\x00' * 4)
     import struct
-    with open("heap_file.out", "r") as f:
+    with open("heap_file", "r") as f:
         l = f.read().strip().split('\n')
         for x in l:
             emit(of, struct.pack("<I", int(x, 16)))
