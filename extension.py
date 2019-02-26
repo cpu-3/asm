@@ -101,3 +101,6 @@ def fmv(rd, rs):
 
 def fneg(rd, rs):
     return [('fsgnjn.s', (rd, rs, rs))]
+
+def fabs(rd, rs):
+    return [('fsgnjx.s', (rd, rs, rs))]

@@ -288,6 +288,9 @@ def handle_extension(name, arguments):
     elif name == 'fneg.s':
         check_args(name, args, 2)
         return extension.fneg(args[0], args[1])
+    elif name == 'fabs.s':
+        check_args(name, args, 2)
+        return extension.fabs(args[0], args[1])
     else:
         return handle_hooked_instructions(name, arguments)
 
@@ -702,7 +705,8 @@ def main():
     for i in range((0x21000 - read_bytes) // 4):
         emit(of, b'\x00' * 4)
     import struct
-    with open("heap_file", "r") as f:
+    p = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(p, "heap_file"), "r") as f:
         l = f.read().strip().split('\n')
         for x in l:
             emit(of, struct.pack("<I", int(x, 16)))
