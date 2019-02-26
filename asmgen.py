@@ -34,12 +34,12 @@ def bit_reorder(v, l):
 
 def jal(rd, imm):
     rd = check_and_trans_reg(rd)
-    imm = check_and_trans_imm(imm, 21)
-    check_alignment(imm, 2)
+    imm = check_and_trans_imm(imm, 20)
+    # check_alignment(imm, 2)
     return pack([
         (0b1101111, 7),
         (rd, 5),
-        (bit_reorder(imm, [20, *range(10, 0, -1), 11, *range(19, 11, -1)]), 20)
+        (bit_reorder(imm, [19, *range(9, -1, -1), 10, *range(18, 10, -1)]), 20)
     ])
 
 def jalr(rd, rs, imm):
@@ -55,11 +55,11 @@ def jalr(rd, rs, imm):
     ])
 
 def branch(imm, funct3, rs1, rs2):
-    imm = check_and_trans_imm(imm, 13)
+    imm = check_and_trans_imm(imm, 12)
     rs1 = check_and_trans_reg(rs1)
     rs2 = check_and_trans_reg(rs2)
-    val = (((imm >> 1) & 0b1111) << 1) | ((imm >> 11) & 1)
-    val2 = ((imm >> 5) & 0b111111) | (((imm >> 12) & 1) << 6)
+    val = ((imm & 0b1111) << 1) | ((imm >> 10) & 1)
+    val2 = ((imm >> 4) & 0b111111) | (((imm >> 11) & 1) << 6)
     return pack([
         (0b1100011, 7),
         (val, 5),

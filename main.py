@@ -45,8 +45,8 @@ emit_coe = False
 tags = {}  # map[tag]int
 use_place_holder = True
 
-__builtin_stack_init = 0xf4240 - 4
-__builtin_heap_init =  0x25000
+__builtin_stack_init = (0xf4240 - 4) // 4
+__builtin_heap_init =  0x25000 //4
 
 tags['__builtin_stack_init'] = __builtin_stack_init
 tags['__builtin_heap_init'] = __builtin_heap_init
@@ -80,7 +80,7 @@ def parse_tag_line(s):
         if name in tags:
             #raise Exception('Collision occurred: {}'.format(name))
             pass
-        tags[m.group('tag_name')] = read_bytes
+        tags[m.group('tag_name')] = read_bytes // 4
 
 
 def _solve_tag(name):
@@ -89,7 +89,7 @@ def _solve_tag(name):
 
     if name not in tags:
         print(name, hex(heap.get(name)))
-        return heap.get(name)
+        return heap.get(name) // 4
         #print('{} は見つかりませんでした。'.format(name))
         #raise Exception('Tag is not found')
     addr = tags[name]
@@ -97,7 +97,7 @@ def _solve_tag(name):
 
 
 def solve_tag_relative(name):
-    return str(_solve_tag(name) - read_bytes)
+    return str(_solve_tag(name) - read_bytes//4)
 
 
 def solve_tag_absolute(name):
@@ -107,7 +107,7 @@ def solve_tag_absolute(name):
 def check_args(name, args, length):
     if (len(args) == length):
         if (debug):
-            print('{}: {}, {}'.format(hex(read_bytes)[2:], name, ','.join(args)))
+            print('{}: {}, {}'.format(hex(read_bytes // 4)[2:], name, ','.join(args)))
         return
 
     print('{} should have {} args. But got {}'.format(name, length, len(args)))
