@@ -57,6 +57,11 @@ li hp, __builtin_heap_init
 j _min_caml_start
 '''
 
+epilogue = '''
+li a0, __builtin_heap_init
+jalr x0, a0, -1
+'''
+
 debug = True
 
 tag_re = r'((?P<tag_name>[_|\w|.]*):)'
@@ -660,6 +665,20 @@ def main():
                 continue
             read_bytes += len(a)
 
+    for line in open(filename).readlines():
+        l = line.strip()
+        parse_tag_line(l)
+        if parse_line(l) is not None:
+            # あんま綺麗じゃないなあ
+            read_bytes += len(parse_line(l))
+
+    for line in epilogue.split('\n'):
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+
+
     for line in lib_data.split('\n'):
         a = parse_line(line.strip())
         parse_tag_line(line.strip())
@@ -667,12 +686,6 @@ def main():
             continue
         read_bytes += len(a)
 
-    for line in open(filename).readlines():
-        l = line.strip()
-        parse_tag_line(l)
-        if parse_line(l) is not None:
-            # あんま綺麗じゃないなあ
-            read_bytes += len(parse_line(l))
 
     print(tags)
     asmgen.tags = tags
@@ -688,6 +701,20 @@ def main():
             read_bytes += len(a)
             emit(of, a)
 
+    for line in open(filename).readlines():
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+        emit(of, a)
+
+    for line in epilogue.split('\n'):
+        a = parse_line(line.strip())
+        if a is None:
+            continue
+        read_bytes += len(a)
+        emit(of, a)
+
     for line in lib_data.split('\n'):
         a = parse_line(line.strip())
         if a is None:
@@ -695,12 +722,6 @@ def main():
         read_bytes += len(a)
         emit(of, a)
 
-    for line in open(filename).readlines():
-        a = parse_line(line.strip())
-        if a is None:
-            continue
-        read_bytes += len(a)
-        emit(of, a)
 
     for i in range((0x21000 - read_bytes) // 4):
         emit(of, b'\x00' * 4)
