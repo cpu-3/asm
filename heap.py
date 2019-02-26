@@ -45,7 +45,7 @@ add("n_reflections", 1 * 4)
 
 
 dic = {}
-base = 0x21000
+base = 0x10 * 4
 for x in l:
     dic[x[0]] = base
     base += x[1]
@@ -53,12 +53,11 @@ for x in l:
 def get(name):
     return dic[name[9:]]
 
-"""
-print("[",end="")
-for x in l:
-    base += x[1]
-    print("(\"", x[0], "\",",  base, ");", sep="")
-print("]",end="")
-"""
 
-
+if __name__ == '__main__':
+    base = 0x10 * 4
+    print("[",end="")
+    for x in l:
+        print("(\"", x[0], "\",",  base // 4, ");", sep="")
+        base += x[1]
+    print("]",end="")

@@ -48,6 +48,8 @@ use_place_holder = True
 __builtin_stack_init = (0xf4240 - 4) // 4
 __builtin_heap_init =  0x25000 //4
 
+program_start = 456 * 4
+
 tags['__builtin_stack_init'] = __builtin_stack_init
 tags['__builtin_heap_init'] = __builtin_heap_init
 
@@ -665,6 +667,8 @@ def main():
                 continue
             read_bytes += len(a)
 
+    read_bytes = program_start
+
     for line in open(filename).readlines():
         l = line.strip()
         parse_tag_line(l)
@@ -701,6 +705,22 @@ def main():
             read_bytes += len(a)
             emit(of, a)
 
+    for i in range((0x10 * 4 - read_bytes) // 4):
+        read_bytes += 4
+        emit(of, b'\x00' * 4)
+
+    import struct
+    p = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(p, "heap_file"), "r") as f:
+        l = f.read().strip().split('\n')
+        for x in l:
+            read_bytes += 4
+            emit(of, struct.pack("<I", int(x, 16)))
+
+    print(read_bytes)
+    read_bytes = program_start
+
+
     for line in open(filename).readlines():
         a = parse_line(line.strip())
         if a is None:
@@ -721,16 +741,6 @@ def main():
             continue
         read_bytes += len(a)
         emit(of, a)
-
-
-    for i in range((0x21000 - read_bytes) // 4):
-        emit(of, b'\x00' * 4)
-    import struct
-    p = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(p, "heap_file"), "r") as f:
-        l = f.read().strip().split('\n')
-        for x in l:
-            emit(of, struct.pack("<I", int(x, 16)))
 
     # prologue
     if emit_coe:
