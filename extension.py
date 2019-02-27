@@ -36,6 +36,11 @@ def bleu(rs, rt, imm):
     l = [('bgeu', (rt, rs, imm))]
     return l
 
+def bnei(rs, rt, imm):
+    rt = utils.check_and_trans_imm(str(utils.get_reg(rt) - 16), 5)
+    l = [('bgeu', (rs, 'x' + str(rt), imm))]
+    return l
+
 def jump(dst):
     l = [('jal', ('x0', dst))]
     return l

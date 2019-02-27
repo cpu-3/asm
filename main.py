@@ -265,6 +265,9 @@ def handle_extension(name, arguments):
     elif name == 'bleu':
         check_args(name, args, 3)
         return extension.bleu(args[0], args[1], args[2])
+    elif name == 'bnei':
+        check_args(name, args, 3)
+        return extension.bnei(args[0], args[1], args[2])
     elif name == 'j':
         check_args(name, args, 1)
         return extension.jump(args[0])
