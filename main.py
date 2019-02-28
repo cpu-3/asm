@@ -46,7 +46,7 @@ tags = {}  # map[tag]int
 use_place_holder = True
 
 __builtin_stack_init = (0xf4240 - 4) // 4
-__builtin_heap_init =   0x65000 //4
+__builtin_heap_init =   0x25000 //4
 
 program_start = 456 * 4
 
@@ -714,7 +714,7 @@ def main():
 
     import struct
     p = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(p, "heap_file"), "r") as f:
+    with open(os.path.join(p, "heap_file2"), "r") as f:
         l = f.read().strip().split('\n')
         for x in l:
             read_bytes += 4
