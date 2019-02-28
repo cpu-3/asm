@@ -46,7 +46,7 @@ tags = {}  # map[tag]int
 use_place_holder = True
 
 __builtin_stack_init = (0xf4240 - 4) // 4
-__builtin_heap_init =  0x25000 //4
+__builtin_heap_init =   0x65000 //4
 
 program_start = 456 * 4
 
